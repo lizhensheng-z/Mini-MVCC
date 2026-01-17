@@ -1,4 +1,4 @@
-package com.mini.mvcc.core.exception;
+package com.mini.mvcc.exception;
 
 /**
  * 事务相关异常

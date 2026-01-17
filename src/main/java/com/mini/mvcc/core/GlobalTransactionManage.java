@@ -1,8 +1,6 @@
 package com.mini.mvcc.core;
 
-import com.mini.mvcc.core.exception.TransactionException;
-
-import java.util.Collection;
+import com.mini.mvcc.exception.TransactionException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -80,7 +78,21 @@ public class GlobalTransactionManage {
         INVISIBLE_DATA.add(currentTrxId);
     }
 
-    public ReadViewSnapShot createReadViewSnapShot(){
-        return null;
+    /**
+     *
+     * @return 生成读快照
+     */
+    public static ReadViewSnapShot createReadViewSnapShot(Long creatorTrxId){
+        Set<Long> mIdsCopy;
+        long maxTrxId;
+        //加锁，防止这一时刻的快照不一致
+        synchronized (ACTIVE_TRX_IDS){
+            //拷贝此刻的 活跃事务id列表
+            mIdsCopy = new HashSet<>(ACTIVE_TRX_IDS);
+            //获取当前时刻的最大事务id：全局最大+1
+            maxTrxId = GLOBAL_TRX_ID.get()+1;
+        }
+        Long minTrxId = mIdsCopy.isEmpty() ? maxTrxId : mIdsCopy.stream().min(Long::compareTo).get();
+        return new ReadViewSnapShot(creatorTrxId,minTrxId,mIdsCopy,maxTrxId);
     }
 }
